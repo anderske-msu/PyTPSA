@@ -1,35 +1,35 @@
 from .cython import tpsalib as tlib
 import cmath
-
-
+import numpy as np
 
 
 class tpsa(object):
     dimension = 0
     max_order = 0
     initialized = False
-    def_string_repr=None
+    def_string_repr = None
+
     def __init__(self, value=0.0, variable=0, dtype=float, tps=None, input_map=[]):
-        self.string_repr=tpsa.def_string_repr
+        self.string_repr = tpsa.def_string_repr
         if tps is not None:
             if dtype in (float, complex):
-                self.dtype=dtype
+                self.dtype = dtype
             else:
                 raise ValueError("Unknown type")
-            self._tps=tps;
+            self._tps = tps
             return
         if tpsa.initialized == False:
-            print('TPSA class has to be initialized')
+            print("TPSA class has to be initialized")
             exit(-1)
 
         if len(input_map) > 0:
-            if dtype==float:
-                self._tps=tlib.PyDTPSA(input_map=input_map)
-                self.dtype=dtype
+            if dtype == float:
+                self._tps = tlib.PyDTPSA(input_map=input_map)
+                self.dtype = dtype
                 return
 
-            elif dtype==complex:
-                self._tps=tlib.PyCTPSA(input_map=input_map)
+            elif dtype == complex:
+                self._tps = tlib.PyCTPSA(input_map=input_map)
                 self.dtype = dtype
                 return
             else:
@@ -37,7 +37,7 @@ class tpsa(object):
 
         if dtype == float:
             self._tps = tlib.PyDTPSA(float(value), variable)
-            self.dtype=float
+            self.dtype = float
 
         elif dtype == complex:
             self._tps = tlib.PyCTPSA(complex(value), variable)
@@ -75,28 +75,28 @@ class tpsa(object):
 
     def cst(self):
         return self._tps.cst()
+
     def linear(self):
         result = tpsa(0.0, dtype=self.dtype)
-        result._tps=self._tps.linear()
+        result._tps = self._tps.linear()
         return result
 
     def pvl(self):
-        power_list=[]
-        value_list=[]
-        maxind=len(self.indices)
+        power_list = []
+        value_list = []
+        maxind = len(self.indices)
         for i in range(self.get_max_terms()):
             power = self.find_power(i)
-            if i<maxind:
+            if i < maxind:
                 value = self.element(power)
             else:
                 value = 0
-            #if value==0 and i>0:
+            # if value==0 and i>0:
             #    continue
 
             power_list.append(power[1:])
             value_list.append(value)
         return power_list, value_list
-
 
     @property
     def indices(self):
@@ -118,28 +118,28 @@ class tpsa(object):
         return self._tps.get_term()
 
     def element(self, l):
-        if isinstance(l,int):
+        if isinstance(l, int):
             return self._tps.element(l)
         elif isinstance(l, list):
             return self._tps.element(*l)
 
     def evaluate(self, values):
-        if len(values)==tpsa.dimension and isinstance(values[0], self.dtype):
+        if len(values) == tpsa.dimension and isinstance(values[0], self.dtype):
             return self._tps.evaluate(values)
         else:
             print("wrong vector length or wrong datatype")
 
     def composite(self, values):
-        if len(values)==tpsa.dimension:
+        if len(values) == tpsa.dimension:
             try:
-                tps_list=[v._tps for v in values]
+                tps_list = [v._tps for v in values]
             except:
-                tps_list=[]
+                tps_list = []
                 for v in values:
                     if isinstance(v, tpsa):
                         tps_list.append(v._tps)
                     else:
-                        tps_list.append(tpsa(v,dtype=self.dtype)._tps)
+                        tps_list.append(tpsa(v, dtype=self.dtype)._tps)
 
             temp = self._tps.composition(tps_list)
             return tpsa(tps=temp, dtype=self.dtype)
@@ -147,21 +147,22 @@ class tpsa(object):
             print("wrong vector length, should be {}".format(tpsa.dimension))
 
     def derivative(self, dim, order=1):
-        result=tpsa(0.0, dtype=self.dtype)
-        result._tps=self._tps.derivative(dim, order)
-        return result
-    def integrate(self, dim, a0):
-        result=tpsa(0.0, dtype=self.dtype)
-        result._tps=self._tps.integrate(dim, a0)
+        result = tpsa(0.0, dtype=self.dtype)
+        result._tps = self._tps.derivative(dim, order)
         return result
 
-    def conjugate(self, mode=''):
+    def integrate(self, dim, a0):
+        result = tpsa(0.0, dtype=self.dtype)
+        result._tps = self._tps.integrate(dim, a0)
+        return result
+
+    def conjugate(self, mode=""):
         # mode=1; z1, z1*, z2, z2* ...
         # mode=2; z1, z2,...,z1*, z2* ...
         modenum = 0
-        if mode.upper() == 'COMPLEXPAIR' or mode.upper() == 'CP':
+        if mode.upper() == "COMPLEXPAIR" or mode.upper() == "CP":
             modenum = 1
-        elif mode.upper() == 'REAL' or mode.upper() == 'R':
+        elif mode.upper() == "REAL" or mode.upper() == "R":
             modenum = 2
         else:
             print("INVALID MODE, supported mode are 'ComplexPair' or 'Real'")
@@ -173,10 +174,9 @@ class tpsa(object):
     def copy(self):
         return tpsa(dtype=self.dtype, tps=self._tps)
 
-
     def __iadd__(self, other):
         if isinstance(other, tpsa):
-            self._tps+=other._tps
+            self._tps += other._tps
         else:
             self = self + other
         return self
@@ -190,7 +190,7 @@ class tpsa(object):
 
     def __imul__(self, other):
         if isinstance(other, tpsa):
-            self._tps*=other._tps
+            self._tps *= other._tps
         else:
             self = self * other
         return self
@@ -276,29 +276,52 @@ class tpsa(object):
     def __repr__(self):
         return self._tps.__repr__()
 
+    def __pow__(self, other):
+        return pow(self, other)
+
+
 def inv(a):
     if isinstance(a, tpsa):
         return tpsa(tps=tlib.inv(a._tps), dtype=a.dtype)
     else:
-        return 1.0/a
+        return 1.0 / a
+
 
 def exp(a):
     if isinstance(a, tpsa):
         return tpsa(tps=tlib.exp(a._tps), dtype=a.dtype)
     else:
-        return cmath.exp(a)
+        try:
+            return cmath.exp(a)
+        except ValueError:
+            return np.exp(a)
+        except Exception as e:
+            raise e
+
 
 def log(a):
     if isinstance(a, tpsa):
         return tpsa(tps=tlib.log(a._tps), dtype=a.dtype)
     else:
-        return cmath.log(a)
+        try:
+            return cmath.log(a)
+        except ValueError:
+            return np.log(a)
+        except Exception as e:
+            raise e
+
 
 def sqrt(a):
     if isinstance(a, tpsa):
         return tpsa(tps=tlib.sqrt(a._tps), dtype=a.dtype)
     else:
-        return cmath.sqrt(a)
+        try:
+            return cmath.sqrt(a)
+        except ValueError:
+            return np.sqrt(a)
+        except Exception as e:
+            raise e
+
 
 def pow(a, ind):
     if isinstance(a, tpsa):
@@ -306,129 +329,196 @@ def pow(a, ind):
     else:
         return None
 
+
 def sin(a):
     if isinstance(a, tpsa):
         return tpsa(tps=tlib.sin(a._tps), dtype=a.dtype)
     else:
-        return cmath.sin(a)
+        try:
+            return cmath.sin(a)
+        except ValueError:
+            return np.sin(a)
+        except Exception as e:
+            raise e
+
+
 def arcsin(a):
     if isinstance(a, tpsa):
         return tpsa(tps=tlib.arcsin(a._tps), dtype=a.dtype)
     else:
-        return cmath.asin(a)
+        try:
+            return cmath.asin(a)
+        except ValueError:
+            return np.asin(a)
+        except Exception as e:
+            raise e
+
 
 def cos(a):
     if isinstance(a, tpsa):
         return tpsa(tps=tlib.cos(a._tps), dtype=a.dtype)
     else:
-        return cmath.cos(a)
+        try:
+            return cmath.cos(a)
+        except ValueError:
+            return np.cos(a)
+        except Exception as e:
+            raise e
+
+
 def arccos(a):
     if isinstance(a, tpsa):
         return tpsa(tps=tlib.arccos(a._tps), dtype=a.dtype)
     else:
-        return cmath.acos(a)
+        try:
+            return cmath.acos(a)
+        except ValueError:
+            return np.acos(a)
+        except Exception as e:
+            raise e
+
+
 def tan(a):
     if isinstance(a, tpsa):
         return tpsa(tps=tlib.tan(a._tps), dtype=a.dtype)
     else:
-        return cmath.tan(a)
+        try:
+            return cmath.tan(a)
+        except ValueError:
+            return np.tan(a)
+        except Exception as e:
+            raise e
+
 
 def sinh(a):
     if isinstance(a, tpsa):
         return tpsa(tps=tlib.sinh(a._tps), dtype=a.dtype)
     else:
-        return cmath.sinh(a)
+        try:
+            return cmath.sinh(a)
+        except ValueError:
+            return np.sinh(a)
+        except Exception as e:
+            raise e
+
+
 def cosh(a):
     if isinstance(a, tpsa):
         return tpsa(tps=tlib.cosh(a._tps), dtype=a.dtype)
     else:
-        return cmath.cosh(a)
+        try:
+            return cmath.cosh(a)
+        except ValueError:
+            return np.cosh(a)
+        except Exception as e:
+            raise e
+
 
 def initialize(dim, order, variable_name=None):
-    tpsa.initialize(dim,order)
+    tpsa.initialize(dim, order)
     if variable_name is not None:
         tpsa.set_variable_name(variable_name)
+
 
 def get_dimension():
     return tpsa.dimension
 
-def save(filename, *args):
 
+def save(filename, *args):
     import numpy as np
-    if len(args)==0:
-        print('Nothing saved.')
+
+    if len(args) == 0:
+        print("Nothing saved.")
         return
-    elif len(args)==1 and isinstance(args[0],list):
+    elif len(args) == 1 and isinstance(args[0], list):
         save(filename, *(args[0]))
         return
 
-    with open(filename, 'wb') as f:
+    with open(filename, "wb") as f:
         np.save(f, np.array([len(args), args[0].dimension, args[0].max_order]))
         for arg in args:
             np.save(f, np.array(arg.indices))
 
 
-
 def load(filename):
     import numpy as np
-    ret=[]
-    maxord=0
-    maxterm=-1
-    with open(filename, 'rb') as f:
-        temp=np.load(f)
-        print("Loading {} TPS with {} variables upto {} orders".format(temp[0],temp[1],temp[2]))
+
+    ret = []
+    maxord = 0
+    maxterm = -1
+    with open(filename, "rb") as f:
+        temp = np.load(f)
+        print(
+            "Loading {} TPS with {} variables upto {} orders".format(
+                temp[0], temp[1], temp[2]
+            )
+        )
         if tpsa.initialized:
-            if tpsa.dimension!=temp[1]:
-                print('The saved TPSA had different dimension than current setting. Abort')
+            if tpsa.dimension != temp[1]:
+                print(
+                    "The saved TPSA had different dimension than current setting. Abort"
+                )
                 return
-            if tpsa.max_order<temp[2]:
+            if tpsa.max_order < temp[2]:
                 from scipy.special import comb
-                maxterm=comb(tpsa.max_order+tpsa.dimension, tpsa.dimension, exact=True)
+
+                maxterm = comb(
+                    tpsa.max_order + tpsa.dimension, tpsa.dimension, exact=True
+                )
         else:
-            tpsa.initialize(temp[1],temp[2])
+            tpsa.initialize(temp[1], temp[2])
         for i in range(temp[0]):
-            temptps=np.load(f)
-            if maxterm>0 and len(temp)>maxterm:
-                temptps=temptps[0:maxterm]
-                print('Warning, the tpsa is truncated from order {} to {}'.format(temp[2], tpsa.max_order))
+            temptps = np.load(f)
+            if maxterm > 0 and len(temp) > maxterm:
+                temptps = temptps[0:maxterm]
+                print(
+                    "Warning, the tpsa is truncated from order {} to {}".format(
+                        temp[2], tpsa.max_order
+                    )
+                )
             if isinstance(temptps[0], np.floating):
                 dtype = float
             elif isinstance(temptps[0], np.complexfloating):
                 dtype = complex
             else:
                 raise ValueError("Unknown type")
-            ret.append(tpsa(input_map=temptps.tolist(), dtype=dtype) )
+            ret.append(tpsa(input_map=temptps.tolist(), dtype=dtype))
         print("Success!")
         return ret
 
 
 def inverse_map(list_of_tps, initial_trial=None, iteration_limit=0):
     import numpy as np
-    if tpsa.dimension!=len(list_of_tps):
-        print("The input is either over- or under- determined, inversion is not possible")
+
+    if tpsa.dimension != len(list_of_tps):
+        print(
+            "The input is either over- or under- determined, inversion is not possible"
+        )
         return
-    linear_map=np.eye(tpsa.dimension, dtype=list_of_tps[0].dtype)
-    nlm=[]
+    linear_map = np.eye(tpsa.dimension, dtype=list_of_tps[0].dtype)
+    nlm = []
     for i in range(tpsa.dimension):
         linear_map[i, :] = list_of_tps[i].linear().indices[1:]
-        nlm.append(list_of_tps[i]-list_of_tps[i].linear())
+        nlm.append(list_of_tps[i] - list_of_tps[i].linear())
     try:
-        lminv=np.linalg.inv(linear_map)
+        lminv = np.linalg.inv(linear_map)
     except:
         print("Linear map is non inversible, Abort")
         return None
 
     Iv = [tpsa(0, i + 1, dtype=list_of_tps[0].dtype) for i in range(tpsa.dimension)]
-    results = [tpsa(0, i + 1, dtype=list_of_tps[0].dtype) for i in range(tpsa.dimension)]
+    results = [
+        tpsa(0, i + 1, dtype=list_of_tps[0].dtype) for i in range(tpsa.dimension)
+    ]
     if initial_trial is not None:
-        results=initial_trial
+        results = initial_trial
     temp = [tpsa(0, i + 1, dtype=list_of_tps[0].dtype) for i in range(tpsa.dimension)]
-    iterations=tpsa.max_order
-    if iteration_limit>0 and iteration_limit<iterations:
-        iterations=iteration_limit
+    iterations = tpsa.max_order
+    if iteration_limit > 0 and iteration_limit < iterations:
+        iterations = iteration_limit
     for k in range(iterations):
         for i in range(tpsa.dimension):
-            temp[i] = (Iv[i] - nlm[i].composite(results))
+            temp[i] = Iv[i] - nlm[i].composite(results)
         for i in range(tpsa.dimension):
-            results=lminv.dot(temp).tolist()
+            results = lminv.dot(temp).tolist()
     return results
