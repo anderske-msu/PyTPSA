@@ -293,7 +293,7 @@ def exp(a):
     else:
         try:
             return cmath.exp(a)
-        except ValueError:
+        except (ValueError, TypeError):
             return np.exp(a)
         except Exception as e:
             raise e
@@ -305,7 +305,7 @@ def log(a):
     else:
         try:
             return cmath.log(a)
-        except ValueError:
+        except (ValueError, TypeError):
             return np.log(a)
         except Exception as e:
             raise e
@@ -317,7 +317,7 @@ def sqrt(a):
     else:
         try:
             return cmath.sqrt(a)
-        except ValueError:
+        except (ValueError, TypeError):
             return np.sqrt(a)
         except Exception as e:
             raise e
@@ -336,7 +336,7 @@ def sin(a):
     else:
         try:
             return cmath.sin(a)
-        except ValueError:
+        except (ValueError, TypeError):
             return np.sin(a)
         except Exception as e:
             raise e
@@ -348,7 +348,7 @@ def arcsin(a):
     else:
         try:
             return cmath.asin(a)
-        except ValueError:
+        except (ValueError, TypeError):
             return np.asin(a)
         except Exception as e:
             raise e
@@ -360,7 +360,7 @@ def cos(a):
     else:
         try:
             return cmath.cos(a)
-        except ValueError:
+        except (ValueError, TypeError):
             return np.cos(a)
         except Exception as e:
             raise e
@@ -372,7 +372,7 @@ def arccos(a):
     else:
         try:
             return cmath.acos(a)
-        except ValueError:
+        except (ValueError, TypeError):
             return np.acos(a)
         except Exception as e:
             raise e
@@ -384,7 +384,7 @@ def tan(a):
     else:
         try:
             return cmath.tan(a)
-        except ValueError:
+        except (ValueError, TypeError):
             return np.tan(a)
         except Exception as e:
             raise e
@@ -396,7 +396,7 @@ def sinh(a):
     else:
         try:
             return cmath.sinh(a)
-        except ValueError:
+        except (ValueError, TypeError):
             return np.sinh(a)
         except Exception as e:
             raise e
@@ -408,7 +408,7 @@ def cosh(a):
     else:
         try:
             return cmath.cosh(a)
-        except ValueError:
+        except (ValueError, TypeError):
             return np.cosh(a)
         except Exception as e:
             raise e
